@@ -5,17 +5,17 @@ pragma solidity ^0.8.23;
 contract TinyKV {
 
 	// header: first 4 bytes
-	//  0 => 0 : []
-	//  1 => 1 : [0x00000001_XX000000000000000000000000000000000000000000000000000000]
-	// 28 => 1 : [0x0000001C_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX]
-	// 29 => 2 : [0x0000001D_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX]0xXX00000000000000000000000000000000000000000000000000000000000000]
+	// [00000000_00000000000000000000000000000000000000000000000000000000] // null (0 slot)
+	// [00000000_00000000000000000000000000000000000000000000000000000001] // empty (1 slot, hidden)
+	// [00000001_XX000000000000000000000000000000000000000000000000000000] // 1 byte (1 slot)
+	// [0000001C_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX] // 28 bytes (1 slot
+	// [0000001D_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX][XX000000...] // 29 bytes (2 slots)
 	function tinySlots(uint256 size) public pure returns (uint256) {
 		unchecked {
 			return size > 0 ? (size + 35) >> 5 : 0;
 		}
 	}
-
-	function setTiny(uint256 slot, bytes memory v) external {
+	function setTiny(uint256 slot, bytes memory v) internal {
 		unchecked {
 			uint256 head;
 			assembly { head := sload(slot) }
@@ -40,8 +40,7 @@ contract TinyKV {
 			}
 		}
 	}
-
-	function getTiny(uint256 slot) external view returns (bytes memory v) {
+	function getTiny(uint256 slot) internal view returns (bool empty, bytes memory v) {
 		unchecked {
 			uint256 head;
 			assembly { head := sload(slot) }
@@ -59,9 +58,10 @@ contract TinyKV {
 						i := add(i, 1)
 					}
 				}
+			} else {
+				empty = head > 0;
 			}
 		}
 	}
-
 
 }
