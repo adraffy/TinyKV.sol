@@ -40,17 +40,7 @@ After:
 function text(bytes32, string calldata) external view returns (string memory) {
 	return string(reflect());
 }
-
-// use the incoming call as the key!
 function reflect() internal view returns (bytes memory) {
-	uint256 slot;
-	assembly {
-		let p := mload(0x40)
-		let n := calldatasize()
-		calldatacopy(p, 0, n)
-		slot := keccak256(p, n)
-	}
-	(, bytes memory v) = getTiny(slot);
-	return v;
+	return getTiny(uint256(keccak256(msg.data))); // use the incoming call as the key!
 }
 ```

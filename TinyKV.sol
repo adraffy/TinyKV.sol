@@ -40,7 +40,7 @@ contract TinyKV {
 			}
 		}
 	}
-	function getTiny(uint256 slot) internal view returns (bool empty, bytes memory v) {
+	function getTiny(uint256 slot) internal view returns (bytes memory v) {
 		unchecked {
 			uint256 head;
 			assembly { head := sload(slot) }
@@ -58,8 +58,6 @@ contract TinyKV {
 						i := add(i, 1)
 					}
 				}
-			} else {
-				empty = head > 0;
 			}
 		}
 	}
